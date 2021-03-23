@@ -186,6 +186,9 @@ proc drawTexCentered*(tex : Texture, posx, posy : int | float | float32, tint : 
 func reflect*(i, tp : int | float) : int | float = ## Flips value over tp
     return tp * 2 - i
 
+func reflect*(v : Vector2, tp : int | float) : Vector2 =
+    return makevec2(tp * 2 - v.x, tp * 2 - v.y)
+
 func abs*(v : Vector2) : Vector2 =
     return makevec2(abs v.x, abs v.y)
 
@@ -289,3 +292,15 @@ func getNeighborTiles*[T](map : seq[seq[T]], y, x : int) : seq[T] =
         result.add map[y, x + 1]
     if x > 0:
         result.add map[y, x - 1]
+
+iterator spsplit*(s : string, key : char | string) : string =
+    var result : string
+    for c in s:
+        if key in result & $c:
+            yield result 
+            result = ""
+        else:
+            if c == ' ':
+                result &= " " 
+            else: result &= c
+    yield result
