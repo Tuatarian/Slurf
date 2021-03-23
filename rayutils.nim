@@ -187,7 +187,7 @@ func reflect*(i, tp : int | float) : int | float = ## Flips value over tp
     return tp * 2 - i
 
 func reflect*(v : Vector2, tp : int | float) : Vector2 =
-    return makevec2(tp * 2 - v.x, tp * 2 - v.y)
+return makevec2(tp * 2 - v.x, tp * 2 - v.y)
 
 func abs*(v : Vector2) : Vector2 =
     return makevec2(abs v.x, abs v.y)
