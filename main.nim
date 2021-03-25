@@ -61,13 +61,13 @@ func isOnFloor(plr : var Player, plrTex : Texture, map : seq[seq[Tile]], rayLen 
 func movePlayer(plr : var Player, plrTex : Texture, map : seq[seq[Tile]], tilesize : int, fJumped : var int, sH : int) : Vector2 =
     if plr.isOnFloor(plrTex, map, 1, tilesize, sH):
         if IsKeyPressed(KEY_Z):
-            result.y = -75
+            result.y = -10
             fJumped += 1
         else: fJumped = 0
     else:
         fJumped += 1
-        result.y += -75 / (fJumped * 1.25)
-        result.y += 0.25
+        result.y += 
+        result.y += 0.1
     result = result.round(5)
     result.y = max(result.y, -20)
 
