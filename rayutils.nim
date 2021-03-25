@@ -1,6 +1,6 @@
 import raylib, math, hashes, sugar, macros, strutils, lenientops
 
-template BGREY*() : auto = makecolor("282828", 255)
+template BGREY*() : auto = makecolor("242424", 255)
 template OFFWHITE*() : auto = makecolor(235, 235, 235)
 
 func makecolor*(f, d, l : int | float | uint8, o : uint8 = 255) : Color = ## Easy color constructor
@@ -127,11 +127,25 @@ proc UnloadSound*(soundargs : varargs[Sound]) = ## runs UnloadSound for each var
 func toTuple*(v : Vector2) : (float32, float32) = ## Returns (x, y)
     return (v.x, v.y) 
 
-func clamp*(v, v2 : Vector2) : Vector2 = ## Returns min of x and min of y 
+func min*(v, v2 : Vector2) : Vector2 = ## Returns min of x and min of y 
     return makevec2(min(v.x, v2.x), min(v.y, v2.y))
 
-func antiClamp*(v, v2 : Vector2) : Vector2 = ## Returns max of x and max of y
+func min*[T](args : varargs[T]) : T =
+    var lastmin : T
+    for i in args:
+        if i < lastmin:
+            lastmin = i
+    return lastmin 
+
+func max*(v, v2 : Vector2) : Vector2 = ## Returns max of x and max of y
     return makevec2(max(v.x, v2.x), max(v.y, v2.y))
+
+func max*[T](args : varargs[T]) : T =
+    var lastmax : T
+    for i in args:
+        if i > lastmax:
+            lastmax = i
+    return lastmax
 
 func ceil*(v : Vector2) : Vector2 = ## Returns ceil x, ceil y
     return makevec2(ceil v.x, ceil v.y)
@@ -171,6 +185,12 @@ func apply*(v : Vector2, op : (float32) -> float32) : Vector2 = ## runs proc on 
 func round*(v : Vector2) : Vector2 = ## round x, round y
     return makevec2(round v.x, round v.y)
 
+func round*(v : Vector2 , places : int) : Vector2 = ## round x, round y
+    return makevec2(round(v.x, places), round(v.y, places))
+
+func roundToInt*(f : float) : int = 
+    int round f
+
 func roundDown*(v : Vector2) : Vector2 = ## rounds down x and y
     return makevec2(float32 int v.x, float32 int v.y)
 
@@ -187,7 +207,7 @@ func reflect*(i, tp : int | float) : int | float = ## Flips value over tp
     return tp * 2 - i
 
 func reflect*(v : Vector2, tp : int | float) : Vector2 =
-return makevec2(tp * 2 - v.x, tp * 2 - v.y)
+    return makevec2(tp * 2 - v.x, tp * 2 - v.y)
 
 func abs*(v : Vector2) : Vector2 =
     return makevec2(abs v.x, abs v.y)
@@ -304,3 +324,6 @@ iterator spsplit*(s : string, key : char | string) : string =
                 result &= " " 
             else: result &= c
     yield result
+
+func DrawCircle*(centerX : float, centerY : float, radius : float, tint : Color) =
+    DrawCircle int centerX, int centerY, radius, tint
