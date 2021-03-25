@@ -66,7 +66,7 @@ func movePlayer(plr : var Player, plrTex : Texture, map : seq[seq[Tile]], tilesi
         else: fJumped = 0
     else:
         fJumped += 1
-        result.y += 
+        result.y += # Insert sigmoid
         result.y += 0.1
     result = result.round(5)
     result.y = max(result.y, -20)
