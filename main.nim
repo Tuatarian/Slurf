@@ -1,4 +1,4 @@
-import raylib, lenientops, rayutils, tables, sequtils, strutils
+import raylib, lenientops, rayutils, tables, math, sequtils
 
 type
     Player = object
@@ -15,9 +15,9 @@ InitWindow screenWidth, screenHeight, "Slurf"
 
 let
     tileTexTable = toTable {BASE : LoadTexture "assets/sprites/BaseTile.png"}
+    plrTex  = LoadTexture "assets/sprites/Plr/plrRun0.png"
 
-func flipY(i : int | float32) : int =
-    int reflect(int i, screenHeight)
+func flipY(i : int | float32 | float) : int = int(720 - i)
 
 # -------------------- #
 #    Map Management    #
@@ -27,7 +27,6 @@ func drawMap(map : seq[seq[Tile]], tileTextable : Table[Tile, Texture], tilesize
     for i in 0..<map.len:
         for j in 0..<map[i].len:
             if map[i, j] == BASE:
-                debugEcho makevec2(j * tilesize, reflect(i * tilesize, screenHeight div 2))
                 DrawTexture(tileTextable[map[i, j]], j * tilesize, reflect(i * tilesize, screenHeight div 2) - tileTextable[map[i, j]].height, WHITE)
 
 func loadMap(file : string) : seq[seq[Tile]] =
@@ -48,31 +47,47 @@ func loadMap(file : string) : seq[seq[Tile]] =
 #    Player Management    #
 # ----------------------- #
 
-func isOnFloor(plr : var Player, map : seq[seq[Tile]], rayLen : int, tilesize : int, screenHeight : int) : bool =
-    let rc = makevec2(plr.pos.x, plr.pos.y + 15)
-    let rcrnd = round(rc / tilesize)
-    if map[flipy rcrnd.y, rcrnd.x] != AIR:
-            plr.pos = round(rc / tilesize) * tilesize
-            return true
+func isOnFloor(plr : var Player, plrTex : Texture, map : seq[seq[Tile]], rayLen : int, tilesize : int, screenHeight : int) : bool =
+    let rc = makevec2(plr.pos.x + (plrTex.width div 2), plr.pos.y + plrTex.height + rayLen)
+    let rcCell = rc div tilesize
+    if map[max(0, flipY(rc.y) div tilesize), rcCell.x] != AIR:
+        plr.pos.y = float flipY((max(0, flipY(rc.y) div tilesize) + 1) * tilesize)
+        DrawCircleV(plr.pos, 5, GREEN)
+        plr.pos.y += -plrTex.height.float
+        DrawCircleV(plr.pos, 5, SKYBLUE)
+        return true
+    
 
-func movePlayer(plr : var Player, map : seq[seq[Tile]], tilesize : int, sH : int) : Vector2 =
-    if plr.isOnFloor(map, 10, tilesize, sH) and IsKeyPressed(KEY_Z):
-        result.y += -250
-    else: result.y += 10
-    result.x += 15
+func movePlayer(plr : var Player, plrTex : Texture, map : seq[seq[Tile]], tilesize : int, fJumped : var int, sH : int) : Vector2 =
+    if plr.isOnFloor(plrTex, map, 1, tilesize, sH):
+        if IsKeyPressed(KEY_Z):
+            result.y = -75
+            fJumped += 1
+        else: fJumped = 0
+    else:
+        fJumped += 1
+        result.y += -75 / (fJumped * 1.25)
+        result.y += 0.25
+    result = result.round(5)
+    result.y = max(result.y, -20)
+
 
 var
-    plr = Player(pos : makevec2(0, flipY(0) - tilesize))
+    plr = Player(pos : makevec2(screenWidth div 2, flipY(0) - tilesize - plrTex.height))
+    map = loadMap(readFile "lvl1.txt")
+    velo : Vector2
+    acc : Vector2
+    fJumped : int
 
 while not WindowShouldClose():
-    ClearBackground makecolor "242424"
+    ClearBackground BGREY
 
-    var velo = movePlayer(plr, map, tilesize, screenHeight)
-
-    for line in loadMap readFile("lvl1.txt"):
-        echo line
+    velo += movePlayer(plr, plrTex, map, tilesize, fJumped, screenHeight)
+    plr.pos += velo
+    velo = makevec2(0, 0)
 
     BeginDrawing()
-    drawMap(loadMap readFile "lvl1.txt", tileTexTable, tilesize, screenHeight)
+    drawMap map, tileTexTable, tilesize, screenHeight
+    DrawTextureV plrTex, plr.pos, WHITE 
     EndDrawing()
 CloseWindow()
